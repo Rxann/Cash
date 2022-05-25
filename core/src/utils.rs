@@ -77,11 +77,6 @@ mod tests {
     }
 
     #[test]
-    fn do_not_extract_anything_from_empty_input() {
-        assert_eq!(extract_digits(""), Ok(("", "")));
-    }
-
-    #[test]
     fn extract_digits_with_no_remainder() {
         assert_eq!(extract_digits("100"), Ok(("", "100")));
     }
@@ -124,12 +119,16 @@ mod tests {
             Err("expected identifier".to_string()),
         );
     }
-    #[test]
-    fn tag_word() {
-        assert_eq!(tag("let", "let a"), " a");
-    }
+
     #[test]
     fn do_not_extract_digits_when_input_is_invalid() {
         assert_eq!(extract_digits("abcd"), Err("expected digits".to_string()));
+    }
+    #[test]
+    fn do_not_extract_spaces1_when_input_does_not_start_with_them() {
+        assert_eq!(
+            extract_whitespace1("blah"),
+            Err("expected a space".to_string()),
+        );
     }
 }

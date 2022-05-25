@@ -1,4 +1,3 @@
-use crate::env::Env;
 use crate::expr::Expr;
 use crate::utils;
 
@@ -29,15 +28,14 @@ impl BindingDef {
             },
         ))
     }
-    pub(crate) fn eval(&self, env: &mut Env) {
-        env.store_binding(self.name.clone(), self.val.eval());
-    }
+    // pub(crate) fn eval(&self, env: &mut Env) {
+    //env.store_binding(self.name.clone(), self.val.eval());
+    //}
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::expr::{Number, Op};
     #[test]
     fn cannot_parse_binding_def_without_space_after_let() {
         assert_eq!(
