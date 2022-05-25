@@ -9,25 +9,25 @@ pub struct BindingDef {
 }
 
 impl BindingDef {
-    pub fn new(s: &str) -> (&str, Self) {
-        let s = utils::tag("let", s);
+    pub fn new(s: &str) -> Result<(&str, Self), String> {
+        let s = utils::tag("let", s)?;
+        let (s, _) = utils::extract_whitespace1(s)?; // New!
+
+        let (s, name) = utils::extract_ident(s)?;
         let (s, _) = utils::extract_whitespace(s);
 
-        let (s, name) = utils::extract_ident(s);
+        let s = utils::tag("=", s)?;
         let (s, _) = utils::extract_whitespace(s);
 
-        let s = utils::tag("=", s);
-        let (s, _) = utils::extract_whitespace(s);
+        let (s, val) = Expr::new(s)?;
 
-        let (s, val) = Expr::new(s);
-
-        (
+        Ok((
             s,
             Self {
                 name: name.to_string(),
                 val,
             },
-        )
+        ))
     }
     pub(crate) fn eval(&self, env: &mut Env) {
         env.store_binding(self.name.clone(), self.val.eval());
@@ -38,22 +38,11 @@ impl BindingDef {
 mod tests {
     use super::*;
     use crate::expr::{Number, Op};
-
     #[test]
-    fn parse_binding_def() {
+    fn cannot_parse_binding_def_without_space_after_let() {
         assert_eq!(
-            BindingDef::new("let a = 10 / 2"),
-            (
-                "",
-                BindingDef {
-                    name: "a".to_string(),
-                    val: Expr {
-                        lhs: Number(10),
-                        rhs: Number(2),
-                        op: Op::Div,
-                    },
-                },
-            ),
+            BindingDef::new("letaaa=1+2"),
+            Err("expected a space".to_string()),
         );
     }
 }
