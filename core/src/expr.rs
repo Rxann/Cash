@@ -1,3 +1,5 @@
+use crate::binding_usage::BindingUsage;
+use crate::block::Block;
 use crate::utils;
 use crate::val::Val;
 
@@ -33,11 +35,19 @@ impl Number {
 pub enum Expr {
     Number(Number),
     Operation { lhs: Number, rhs: Number, op: Op },
+    BindingUsage(BindingUsage),
+    Block(Block),
 }
 
 impl Expr {
     pub fn new(s: &str) -> Result<(&str, Self), String> {
         Self::new_operation(s)
+            .or_else(|_| Self::new_number(s))
+            .or_else(|_| {
+                BindingUsage::new(s)
+                    .map(|(s, binding_usage)| (s, Self::BindingUsage(binding_usage)))
+            })
+            .or_else(|_| Block::new(s).map(|(s, block)| (s, Self::Block(block))))
     }
 
     fn new_operation(s: &str) -> Result<(&str, Self), String> {
@@ -51,9 +61,9 @@ impl Expr {
 
         Ok((s, Self::Operation { lhs, rhs, op }))
     }
-    //fn new_number(s: &str) -> Result<(&str, Self), String> {
-    //Number::new(s).map(|(s, number)| (s, Self::Number(number)))
-    //}
+    fn new_number(s: &str) -> Result<(&str, Self), String> {
+        Number::new(s).map(|(s, number)| (s, Self::Number(number)))
+    }
     pub(crate) fn eval(&self) -> Val {
         match self {
             Self::Number(Number(n)) => Val::Number(*n),
@@ -70,6 +80,7 @@ impl Expr {
 
                 Val::Number(result)
             }
+            _ => todo!(),
         }
     }
 }
@@ -77,6 +88,7 @@ impl Expr {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::stmt::Stmt;
 
     #[test]
     fn parse_number() {
@@ -179,6 +191,31 @@ mod tests {
             }
             .eval(),
             Val::Number(10),
+        );
+    }
+    #[test]
+    fn parse_binding_usage() {
+        assert_eq!(
+            Expr::new("bar"),
+            Ok((
+                "",
+                Expr::BindingUsage(BindingUsage {
+                    name: "bar".to_string(),
+                }),
+            )),
+        );
+    }
+
+    #[test]
+    fn parse_block() {
+        assert_eq!(
+            Expr::new("{ 200 }"),
+            Ok((
+                "",
+                Expr::Block(Block {
+                    stmts: vec![Stmt::Expr(Expr::Number(Number(200)))],
+                }),
+            )),
         );
     }
 }

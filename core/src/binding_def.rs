@@ -1,10 +1,11 @@
+//use crate::env::Env;
 use crate::expr::Expr;
 use crate::utils;
 
 #[derive(Debug, PartialEq)]
 pub struct BindingDef {
-    name: String,
-    val: Expr,
+    pub name: String,
+    pub val: Expr,
 }
 
 impl BindingDef {
@@ -28,19 +29,7 @@ impl BindingDef {
             },
         ))
     }
-    // pub(crate) fn eval(&self, env: &mut Env) {
+    //pub(crate) fn eval(&self, env: &mut Env) {
     //env.store_binding(self.name.clone(), self.val.eval());
     //}
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn cannot_parse_binding_def_without_space_after_let() {
-        assert_eq!(
-            BindingDef::new("letaaa=1+2"),
-            Err("expected a space".to_string()),
-        );
-    }
 }
